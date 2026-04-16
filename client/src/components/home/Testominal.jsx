@@ -74,7 +74,7 @@ const Testominal = () => {
         </div>
 
         <Title
-          title="Don't just takr our words"
+          title="Don't just take our word for it"
           description="Hear what our users say about us. We're always looking for ways to improve. If you have a positive experience with us, leave a review."
         ></Title>
       </div>
