@@ -1,17 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FilePenLineIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
   UploadCloudIcon,
+  XIcon,
 } from "lucide-react";
 import { dummyResumeData } from "../assets/assets";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
 
-  const [allResumes] = useState(dummyResumeData);
+  const [allResumes, setAllResumes] = useState([]);
+  const [showCreateResume, setShowCreateResume] = useState(false);
+  const [showUploadResume, setShowUploadResume] = useState(false);
+  const [title, setTitle] = useState("");
+
+  const navigate = useNavigate();
+
+  const loadAllResumes = async () => {
+    const resumes = await Promise.resolve(dummyResumeData);
+    setAllResumes(resumes);
+  };
+
+  const createResume = async (event) => {
+    event.preventDefault();
+    setShowCreateResume(false);
+    navigate("/app/builder/res123");
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadAllResumes();
+  }, []);
+
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -19,8 +43,13 @@ const Dashboard = () => {
           Welcome, Joe Doe
         </p>
 
+        {/* Buttons */}
         <div className="flex gap-4">
-          <button className="w-full bg-white sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-indigo-500 hover:shadow-lg transition-all duration-300 cursor-pointer">
+          <button
+            onClick={() => setShowCreateResume(true)}
+            className="w-full bg-white sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-indigo-500 hover:shadow-lg transition-all duration-300 cursor-pointer"
+            style={{ borderColor: showCreateResume ? "#6366f1" : undefined }}
+          >
             <PlusIcon className="size-11 transition-all duration-300 p-2.5 bg-linear-to-br from-indigo-300 to-indigo-500 text-white rounded-full" />
 
             <p className="text-sm group-hover:text-indigo-600 transition-all duration-300">
@@ -28,7 +57,11 @@ const Dashboard = () => {
             </p>
           </button>
 
-          <button className="w-full bg-white sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-indigo-500 hover:shadow-lg transition-all duration-300 cursor-pointer">
+          <button
+            onClick={() => setShowUploadResume((prev) => !prev)}
+            className="w-full bg-white sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-indigo-500 hover:shadow-lg transition-all duration-300 cursor-pointer"
+            style={{ borderColor: showUploadResume ? "#8b5cf6" : undefined }}
+          >
             <UploadCloudIcon className="size-11 transition-all duration-300 p-2.5 bg-linear-to-br from-purple-300 to-purple-500 text-white rounded-full" />
 
             <p className="text-sm group-hover:text-indigo-600 transition-all duration-300">
@@ -39,6 +72,7 @@ const Dashboard = () => {
 
         <hr className="border-slate-300 my-6 sm:w-76.25" />
 
+        {/* Resume Cards */}
         <div className="grid grid-cols-2 sm:flex flex-wrap gap-4">
           {allResumes.map((resume, index) => {
             const baseColor = colors[index % colors.length];
@@ -54,6 +88,7 @@ const Dashboard = () => {
               >
                 <div className="absolute top-1 right-1 hidden items-center group-hover:flex">
                   <TrashIcon className="size-7 p-1.5 hover:bg-white/50 rounded text-slate-700 transition-colors" />
+
                   <PencilIcon className="size-7 p-1.5 hover:bg-white/50 rounded text-slate-700 transition-colors" />
                 </div>
 
@@ -70,7 +105,7 @@ const Dashboard = () => {
                 </p>
 
                 <p
-                  className="absolute bottom-1 text-[11px] text-slate-400 group-hover:text-slate-500 transition-all duration-300 px-2 text-center"
+                  className="absolute bottom-1 text-[11px] px-2 text-center"
                   style={{ color: baseColor + "90" }}
                 >
                   Updated on {new Date(resume.updatedAt).toLocaleDateString()}
@@ -79,6 +114,43 @@ const Dashboard = () => {
             );
           })}
         </div>
+
+        {/* Modal */}
+        {showCreateResume && (
+          <form
+            onSubmit={createResume}
+            onClick={() => setShowCreateResume(false)}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-10 flex items-center justify-center"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white border shadow-md rounded-lg w-full max-w-sm p-6"
+            >
+              <h2 className="text-xl font-bold mb-4">Create a Resume</h2>
+
+              <input
+                type="text"
+                placeholder="Enter resume title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-2 mb-4 border rounded focus:outline-none focus:border-green-600"
+                required
+              />
+
+              <button className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                Create Resume
+              </button>
+
+              <XIcon
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                onClick={() => {
+                  setShowCreateResume(false);
+                  setTitle("");
+                }}
+              />
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
