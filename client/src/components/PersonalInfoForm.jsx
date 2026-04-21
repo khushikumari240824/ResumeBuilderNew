@@ -1,8 +1,6 @@
 import {
   BriefcaseBusiness,
-  Github,
   Globe,
-  Linkedin,
   Mail,
   MapPin,
   Phone,
@@ -42,8 +40,8 @@ const PersonalInfoForm = ({
       icon: BriefcaseBusiness,
       type: "text",
     },
-    { key: "linkedin", label: "LinkedIn Profile", icon: Linkedin, type: "url" },
-    { key: "github", label: "GitHub Profile", icon: Github, type: "url" },
+    { key: "linkedin", label: "LinkedIn Profile", icon: Globe, type: "url" },
+    { key: "github", label: "GitHub Profile", icon: Globe, type: "url" },
     { key: "website", label: "Personal Website", icon: Globe, type: "url" },
   ];
 

@@ -2,10 +2,6 @@ import ModernTemplate from "../assets/templates/ModernTemplate";
 import MinimalImageTemplate from "../assets/templates/MinimalImageTemplate";
 import MinimalTemplate from "../assets/templates/MinimalTemplate";
 import ClassicTemplate from "../assets/templates/ClassicTemplate";
-import MinimalistTemplate from "../assets/templates/MinimalistTemplate";
-import CreativeVisualTemplate from "../assets/templates/CreativeVisualTemplate";
-import CorporateATSTemplate from "../assets/templates/CorporateATSTemplate";
-import ModernProTemplate from "../assets/templates/ModernProTemplate";
 
 const ResumePreview = (props) => {
   const { data, template, accentColor, classes = "" } = props;
@@ -19,13 +15,13 @@ const ResumePreview = (props) => {
       case "minimal":
         return <MinimalTemplate data={data} accentColor={accentColor} />;
       case "minimalist":
-        return <MinimalistTemplate data={data} accentColor={accentColor} />;
+        return <MinimalTemplate data={data} accentColor={accentColor} />;
       case "creativeVisual":
-        return <CreativeVisualTemplate data={data} accentColor={accentColor} />;
+        return <ModernTemplate data={data} accentColor={accentColor} />;
       case "corporateATSTemplate":
-        return <CorporateATSTemplate data={data} accentColor={accentColor} />;
+        return <ClassicTemplate data={data} accentColor={accentColor} />;
       case "modernProTemplate":
-        return <ModernProTemplate data={data} accentColor={accentColor} />;
+        return <ModernTemplate data={data} accentColor={accentColor} />;
       default:
         return <ClassicTemplate data={data} accentColor={accentColor} />;
     }

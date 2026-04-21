@@ -27,30 +27,6 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
       name: "Minimal",
       preview: "Ultra-clean design that puts your content front and center",
     },
-    {
-      id: "creativeVisual",
-      name: "Creative Visual",
-      preview:
-        "A visually engaging layout with timelines and accent colors for a modern, dynamic presentation.",
-    },
-    {
-      id: "minimalist",
-      name: "Minimalist",
-      preview:
-        "A clean, bold design with structured sections and modern typography.",
-    },
-    {
-      id: "modernProTemplate",
-      name: "Modern Pro Template",
-      preview:
-        "A clean, executive-style resume template designed for senior professionals with strong ATS compatibility.",
-    },
-    {
-      id: "corporateATSTemplate",
-      name: "Corporate ATS Template",
-      preview:
-        "An Applicant Tracking System optimized layout focusing on clarity and keyword visibility.",
-    },
   ];
 
   return (
