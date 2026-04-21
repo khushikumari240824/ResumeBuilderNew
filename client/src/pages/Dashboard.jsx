@@ -16,15 +16,16 @@ const Dashboard = () => {
   const [allResumes, setAllResumes] = useState([]);
   const [showCreateResume, setShowCreateResume] = useState(false);
   const [showUploadResume, setShowUploadResume] = useState(false);
+  const [editResumeId, setEditResumeId]=useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState(null);
 
   const navigate = useNavigate();
 
-  // const loadAllResumes = async () => {
-  //   const resumes = await Promise.resolve(dummyResumeData);
-  //   setAllResumes(resumes);
-  // };
+  const loadAllResumes = async () => {
+    const resumes = await Promise.resolve(dummyResumeData);
+    setAllResumes(resumes);
+  };
 
   const createResume = async (event) => {
     event.preventDefault();
@@ -41,6 +42,22 @@ const Dashboard = () => {
     setShowUploadResume(false);
     navigate("/app/builder/res123");
   };
+  const editTitle = async (event)=>{
+    event.preventDefault();
+
+
+  }
+    const deleteResume = async (resumeId)=>{
+    const confirm = window.confirm('Are you sure you want to delete this resume')
+    if(confirm){
+      setAllResumes(prev => prev.filter(resume => resume._id !== resumeId))
+    }
+
+
+  }
+  useEffect(() => {
+  setAllResumes(dummyResumeData);
+}, []);
 
 
 
@@ -88,16 +105,16 @@ const Dashboard = () => {
 
             return (
               <button
-                key={index}
+                key={index} onClick={()=>navigate('/app/builder/${resume.id')}
                 className="relative w-full sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 border group hover:shadow-lg transition-all duration-300 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg, ${baseColor}10, ${baseColor}40)`,
                   borderColor: baseColor + "40",
                 }}
               >
-                <div className="absolute top-1 right-1 hidden group-hover:flex">
-                  <TrashIcon className="size-7 p-1.5 hover:bg-white/50 rounded" />
-                  <PencilIcon className="size-7 p-1.5 hover:bg-white/50 rounded" />
+                <div onClick={e=>e.stopPropagation()} className="absolute top-1 right-1 hidden group-hover:flex">
+                  <TrashIcon onClick={()=>deleteResume(resume._id)} className="size-7 p-1.5 hover:bg-white/50 rounded" />
+                  <PencilIcon onClick={() => {setEditResumeId(resume._id); setTitle(resume.title)}} className="size-7 p-1.5 hover:bg-white/50 rounded" />
                 </div>
 
                 <FilePenLineIcon
@@ -161,7 +178,7 @@ const Dashboard = () => {
           </form>
         )}
 
-        {/* ================= UPLOAD MODAL ================= */}
+
         {showUploadResume && (
           <form
             onSubmit={uploadResume}
@@ -201,6 +218,7 @@ const Dashboard = () => {
                 id="resume-input"
                 type="file"
                 className="hidden"
+                accept=".pdf"
                 onChange={(e) => setResume(e.target.files[0])}
               />
 
@@ -214,6 +232,41 @@ const Dashboard = () => {
                   setShowUploadResume(false);
                   setTitle("");
                   setResume(null);
+                }}
+              />
+            </div>
+          </form>
+        )}
+        {editResumeId && (
+          <form
+            onSubmit={editTitle}
+            onClick={() => setEditResumeId('')}
+            className="fixed inset-0 bg-black/70 flex items-center justify-center"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-lg p-6 w-full max-w-sm relative"
+            >
+              <h2 className="text-xl font-bold mb-4">Edit Resume Title</h2>
+
+              <input
+                type="text"
+                placeholder="Enter resume title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-2 mb-4 border rounded"
+                required
+              />
+
+              <button className="w-full py-2 bg-green-600 text-white rounded">
+                Update
+              </button>
+
+              <XIcon
+                className="absolute top-3 right-3 cursor-pointer"
+                onClick={() => {
+                  setEditResumeId('');
+                  setTitle("");
                 }}
               />
             </div>
