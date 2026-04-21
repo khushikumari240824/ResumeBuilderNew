@@ -62,21 +62,6 @@ const ResumeBuilder = () => {
 
   const activeSection = sections[activeSectionIndex];
 
-  const loadExistingResume = async () => {
-    try {
-      const { data } = await api.get("/api/resumes/get/" + resumeId, {
-        headers: { Authorization: token },
-      });
-
-      if (data.resume) {
-        setResumeData(data.resume);
-        document.title = data.resume.title;
-      }
-    } catch (error) {
-      console.error("Error saving resume:", error);
-    }
-  };
-
   const changeResumeVisibility = async () => {
     try {
       const formData = new FormData();
@@ -141,8 +126,23 @@ const ResumeBuilder = () => {
   };
 
   useEffect(() => {
+    const loadExistingResume = async () => {
+      try {
+        const { data } = await api.get("/api/resumes/get/" + resumeId, {
+          headers: { Authorization: token },
+        });
+
+        if (data.resume) {
+          setResumeData(data.resume);
+          document.title = data.resume.title;
+        }
+      } catch (error) {
+        console.error("Error saving resume:", error);
+      }
+    };
+
     loadExistingResume();
-  }, []);
+  }, [resumeId, token]);
 
   return (
     <div>

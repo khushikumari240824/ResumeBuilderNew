@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   FilePenLineIcon,
   PencilIcon,
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
 
-  const [allResumes, setAllResumes] = useState([]);
+  const [allResumes, setAllResumes] = useState(dummyResumeData);
   const [showCreateResume, setShowCreateResume] = useState(false);
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [editResumeId, setEditResumeId]=useState(false);
@@ -21,11 +21,6 @@ const Dashboard = () => {
   const [resume, setResume] = useState(null);
 
   const navigate = useNavigate();
-
-  const loadAllResumes = async () => {
-    const resumes = await Promise.resolve(dummyResumeData);
-    setAllResumes(resumes);
-  };
 
   const createResume = async (event) => {
     event.preventDefault();
@@ -55,12 +50,6 @@ const Dashboard = () => {
 
 
   }
-  useEffect(() => {
-  setAllResumes(dummyResumeData);
-}, []);
-
-
-
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -105,7 +94,7 @@ const Dashboard = () => {
 
             return (
               <button
-                key={index} onClick={()=>navigate('/app/builder/${resume.id')}
+                key={index} onClick={() => navigate(`/app/builder/${resume._id}`)}
                 className="relative w-full sm:max-w-36 h-48 flex flex-col items-center justify-center rounded-lg gap-2 border group hover:shadow-lg transition-all duration-300 cursor-pointer"
                 style={{
                   background: `linear-gradient(135deg, ${baseColor}10, ${baseColor}40)`,
