@@ -12,8 +12,26 @@ import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
+  const storageKey = "resume-builder-resumes";
 
-  const [allResumes, setAllResumes] = useState(dummyResumeData);
+  const getInitialResumes = () => {
+    try {
+      const storedResumes = window.localStorage.getItem(storageKey);
+
+      if (storedResumes) {
+        const parsedResumes = JSON.parse(storedResumes);
+        if (Array.isArray(parsedResumes) && parsedResumes.length > 0) {
+          return parsedResumes;
+        }
+      }
+    } catch (error) {
+      console.error("Error reading stored resumes:", error);
+    }
+
+    return dummyResumeData;
+  };
+
+  const [allResumes, setAllResumes] = useState(getInitialResumes);
   const [showCreateResume, setShowCreateResume] = useState(false);
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [editResumeId, setEditResumeId]=useState(false);
@@ -22,10 +40,33 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
+  const persistResumes = (resumes) => {
+    setAllResumes(resumes);
+    window.localStorage.setItem(storageKey, JSON.stringify(resumes));
+  };
+
   const createResume = async (event) => {
     event.preventDefault();
+    const newResume = {
+      _id: `resume-${Date.now()}`,
+      userId: "local-default-user",
+      title: title.trim() || "Untitled Resume",
+      public: false,
+      professional_summary: "",
+      skills: [],
+      experience: [],
+      education: [],
+      project: [],
+      template: "classic",
+      accent_color: "#3b82f6",
+      personal_info: {},
+      updatedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+
+    persistResumes([newResume, ...allResumes]);
     setShowCreateResume(false);
-    navigate("/app/builder/res123");
+    navigate(`/app/builder/${newResume._id}`);
   };
 
   const uploadResume = async (event) => {
@@ -34,18 +75,44 @@ const Dashboard = () => {
     console.log("Title:", title);
     console.log("File:", resume);
 
+    const newResume = {
+      _id: `resume-${Date.now()}`,
+      userId: "local-default-user",
+      title: title.trim() || resume?.name?.replace(/\.pdf$/i, "") || "Uploaded Resume",
+      public: false,
+      professional_summary: "",
+      skills: [],
+      experience: [],
+      education: [],
+      project: [],
+      template: "classic",
+      accent_color: "#3b82f6",
+      personal_info: {},
+      updatedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+
+    persistResumes([newResume, ...allResumes]);
+
     setShowUploadResume(false);
-    navigate("/app/builder/res123");
+    navigate(`/app/builder/${newResume._id}`);
   };
   const editTitle = async (event)=>{
     event.preventDefault();
-
-
+    persistResumes(
+      allResumes.map((item) =>
+        item._id === editResumeId
+          ? { ...item, title: title.trim() || item.title, updatedAt: new Date().toISOString() }
+          : item
+      )
+    );
+    setEditResumeId(false);
+    setTitle("");
   }
     const deleteResume = async (resumeId)=>{
     const confirm = window.confirm('Are you sure you want to delete this resume')
     if(confirm){
-      setAllResumes(prev => prev.filter(resume => resume._id !== resumeId))
+      persistResumes(allResumes.filter(resume => resume._id !== resumeId))
     }
 
 

@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
 import api from "../configs/api";
+import { dummyResumeData } from "../assets/assets";
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
 import TemplateSelector from "../components/TemplateSelector";
@@ -52,6 +53,45 @@ const normalizeResumeData = (resume = {}) => {
     accent_color: resume.accent_color || "#3b82f6",
     public: Boolean(resume.public),
   };
+};
+
+const storageKey = "resume-builder-resumes";
+
+const getLocalResumes = () => {
+  try {
+    const storedResumes = window.localStorage.getItem(storageKey);
+
+    if (storedResumes) {
+      const parsedResumes = JSON.parse(storedResumes);
+      if (Array.isArray(parsedResumes)) {
+        return parsedResumes;
+      }
+    }
+  } catch (error) {
+    console.error("Error reading stored resumes:", error);
+  }
+
+  return dummyResumeData;
+};
+
+const findLocalResumeById = (resumeId) =>
+  getLocalResumes().find((resume) => resume._id === resumeId);
+
+const upsertLocalResume = (resumeId, resumeData) => {
+  const nextResume = normalizeResumeData({
+    ...resumeData,
+    _id: resumeId,
+    updatedAt: new Date().toISOString(),
+  });
+
+  const nextResumes = getLocalResumes().some((resume) => resume._id === resumeId)
+    ? getLocalResumes().map((resume) =>
+        resume._id === resumeId ? { ...resume, ...nextResume } : resume
+      )
+    : [nextResume, ...getLocalResumes()];
+
+  window.localStorage.setItem(storageKey, JSON.stringify(nextResumes));
+  return nextResume;
 };
 
 const ResumeBuilder = () => {
@@ -88,8 +128,10 @@ const ResumeBuilder = () => {
       });
 
       setResumeData((prev) => ({ ...prev, public: !prev.public }));
+      upsertLocalResume(resumeId, { ...resumeData, public: !resumeData.public });
       toast.success(data.message);
     } catch (error) {
+      upsertLocalResume(resumeId, { ...resumeData, public: !resumeData.public });
       console.error("Error saving resume:", error);
     }
   };
@@ -130,14 +172,23 @@ const ResumeBuilder = () => {
       });
 
       setResumeData(normalizeResumeData(data.resume));
+      upsertLocalResume(resumeId, data.resume || updatedResumeData);
       toast.success(data.message);
     } catch (error) {
+      upsertLocalResume(resumeId, updatedResumeData);
       console.error("Error saving resume:", error);
     }
   };
 
   useEffect(() => {
     const loadExistingResume = async () => {
+      const localResume = findLocalResumeById(resumeId);
+
+      if (localResume) {
+        setResumeData(normalizeResumeData(localResume));
+        document.title = localResume.title || "Resume Builder";
+      }
+
       try {
         const { data } = await api.get("/api/resumes/get/" + resumeId, {
           headers: { Authorization: token },
@@ -148,7 +199,9 @@ const ResumeBuilder = () => {
           document.title = data.resume.title;
         }
       } catch (error) {
-        console.error("Error saving resume:", error);
+        if (!localResume) {
+          console.error("Error saving resume:", error);
+        }
       }
     };
 
