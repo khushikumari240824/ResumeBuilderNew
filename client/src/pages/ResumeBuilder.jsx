@@ -77,6 +77,12 @@ const ResumeBuilder = () => {
     }
   };
 
+  useEffect(() => {
+    if (resumeId && token) {
+      loadExistingResume();
+    }
+  }, [resumeId, token]);
+
   const changeResumeVisibility = async () => {
     try {
       const formData = new FormData();
@@ -139,10 +145,6 @@ const ResumeBuilder = () => {
       console.error("Error saving resume:", error);
     }
   };
-
-  useEffect(() => {
-    loadExistingResume();
-  }, []);
 
   return (
     <div>

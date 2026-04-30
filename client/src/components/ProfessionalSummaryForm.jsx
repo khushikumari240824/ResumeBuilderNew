@@ -2,6 +2,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
+import toast from "react-hot-toast";
 
 const ProfessionalSummaryForm = ({ data, onChange, setResumeDate }) => {
   const { token } = useSelector((state) => state.auth);

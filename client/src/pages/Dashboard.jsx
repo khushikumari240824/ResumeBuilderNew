@@ -8,7 +8,7 @@ import {
   UploadCloudIcon,
   XIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import api from "../configs/api.js";
@@ -24,13 +24,13 @@ const Dashboard = () => {
   const [editResumeId, setEditResumeId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { user, token } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
 
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
 
-  const loadAllResumes = async () => {
+  const loadAllResumes = useCallback(async () => {
     try {
       const { data } = await api.get("/api/users/resumes", {
         headers: { Authorization: token },
@@ -39,7 +39,13 @@ const Dashboard = () => {
     } catch (error) {
       toast.error(error?.response?.data?.message || error.message);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      loadAllResumes();
+    }
+  }, [token, loadAllResumes]);
 
   const createResume = async (e) => {
     try {
@@ -124,10 +130,6 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    loadAllResumes();
-  }, []);
-
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -156,7 +158,7 @@ const Dashboard = () => {
           </button>
         </div>
 
-        <hr className="border-slate-300 my-6 sm:w-[305px]" />
+        <hr className="border-slate-300 my-6 sm:w-76.25" />
 
         <div className="grid grid-cols-2 sm:flex flex-wrap gap-4">
           {allResumes.map((resume, index) => {
