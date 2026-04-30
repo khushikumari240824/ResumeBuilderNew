@@ -1,6 +1,5 @@
 import { Loader2, Sparkles } from "lucide-react";
 import React, { useState } from "react";
-import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import api from "../configs/api";
 
