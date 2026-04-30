@@ -16,11 +16,6 @@ import {
   User,
   Award,
 } from "lucide-react";
-import { useSelector } from "react-redux";
-import toast from "react-hot-toast";
-
-import api from "../configs/api";
-import { dummyResumeData } from "../assets/assets";
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
 import TemplateSelector from "../components/TemplateSelector";
@@ -30,75 +25,28 @@ import ExperienceForm from "../components/ExperienceForm";
 import EducationForm from "../components/EducationForm";
 import ProjectForm from "../components/ProjectForm";
 import SkillsForm from "../components/SkillsForm";
+import { useSelector } from "react-redux";
+import api from "../configs/api";
+import toast from "react-hot-toast";
 import CertificationForm from "../components/CertificationForm";
-
-const normalizeResumeData = (resume = {}) => {
-  const normalizedSkills = Array.isArray(resume.skills)
-    ? resume.skills
-    : Array.isArray(resume.skill)
-    ? resume.skill
-    : [];
-
-  return {
-    _id: resume._id || "",
-    title: resume.title || "",
-    personal_info: resume.personal_info || {},
-    professional_summary: resume.professional_summary || "",
-    experience: Array.isArray(resume.experience) ? resume.experience : [],
-    education: Array.isArray(resume.education) ? resume.education : [],
-    project: Array.isArray(resume.project) ? resume.project : [],
-    skills: normalizedSkills,
-    certification: Array.isArray(resume.certification) ? resume.certification : [],
-    template: resume.template || "classic",
-    accent_color: resume.accent_color || "#3b82f6",
-    public: Boolean(resume.public),
-  };
-};
-
-const storageKey = "resume-builder-resumes";
-
-const getLocalResumes = () => {
-  try {
-    const storedResumes = window.localStorage.getItem(storageKey);
-
-    if (storedResumes) {
-      const parsedResumes = JSON.parse(storedResumes);
-      if (Array.isArray(parsedResumes)) {
-        return parsedResumes;
-      }
-    }
-  } catch (error) {
-    console.error("Error reading stored resumes:", error);
-  }
-
-  return dummyResumeData;
-};
-
-const findLocalResumeById = (resumeId) =>
-  getLocalResumes().find((resume) => resume._id === resumeId);
-
-const upsertLocalResume = (resumeId, resumeData) => {
-  const nextResume = normalizeResumeData({
-    ...resumeData,
-    _id: resumeId,
-    updatedAt: new Date().toISOString(),
-  });
-
-  const nextResumes = getLocalResumes().some((resume) => resume._id === resumeId)
-    ? getLocalResumes().map((resume) =>
-        resume._id === resumeId ? { ...resume, ...nextResume } : resume
-      )
-    : [nextResume, ...getLocalResumes()];
-
-  window.localStorage.setItem(storageKey, JSON.stringify(nextResumes));
-  return nextResume;
-};
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
   const { token } = useSelector((state) => state.auth);
 
-  const [resumeData, setResumeData] = useState(() => normalizeResumeData());
+  const [resumeData, setResumeData] = useState({
+    _id: "",
+    title: "",
+    personal_info: {},
+    professional_summary: "",
+    experience: [],
+    education: [],
+    project: [],
+    skill: [],
+    template: "classic",
+    accent_color: "#3b82f6",
+    public: false,
+  });
   const [activeSectionIndex, setactiveSectionIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
 
@@ -114,6 +62,21 @@ const ResumeBuilder = () => {
 
   const activeSection = sections[activeSectionIndex];
 
+  const loadExistingResume = async () => {
+    try {
+      const { data } = await api.get("/api/resumes/get/" + resumeId, {
+        headers: { Authorization: token },
+      });
+
+      if (data.resume) {
+        setResumeData(data.resume);
+        document.title = data.resume.title;
+      }
+    } catch (error) {
+      console.error("Error saving resume:", error);
+    }
+  };
+
   const changeResumeVisibility = async () => {
     try {
       const formData = new FormData();
@@ -127,11 +90,10 @@ const ResumeBuilder = () => {
         headers: { Authorization: token },
       });
 
-      setResumeData((prev) => ({ ...prev, public: !prev.public }));
-      upsertLocalResume(resumeId, { ...resumeData, public: !resumeData.public });
+      setResumeData({ ...resumeData, public: !resumeData.public });
+
       toast.success(data.message);
     } catch (error) {
-      upsertLocalResume(resumeId, { ...resumeData, public: !resumeData.public });
       console.error("Error saving resume:", error);
     }
   };
@@ -153,7 +115,7 @@ const ResumeBuilder = () => {
 
   const saveResume = async () => {
     try {
-      const updatedResumeData = structuredClone(resumeData);
+      let updatedResumeData = structuredClone(resumeData);
 
       if (typeof resumeData.personal_info.image === "object") {
         delete updatedResumeData.personal_info.image;
@@ -171,42 +133,16 @@ const ResumeBuilder = () => {
         headers: { Authorization: token },
       });
 
-      setResumeData(normalizeResumeData(data.resume));
-      upsertLocalResume(resumeId, data.resume || updatedResumeData);
+      setResumeData(data.resume);
       toast.success(data.message);
     } catch (error) {
-      upsertLocalResume(resumeId, updatedResumeData);
       console.error("Error saving resume:", error);
     }
   };
 
   useEffect(() => {
-    const loadExistingResume = async () => {
-      const localResume = findLocalResumeById(resumeId);
-
-      if (localResume) {
-        setResumeData(normalizeResumeData(localResume));
-        document.title = localResume.title || "Resume Builder";
-      }
-
-      try {
-        const { data } = await api.get("/api/resumes/get/" + resumeId, {
-          headers: { Authorization: token },
-        });
-
-        if (data.resume) {
-          setResumeData(normalizeResumeData(data.resume));
-          document.title = data.resume.title;
-        }
-      } catch (error) {
-        if (!localResume) {
-          console.error("Error saving resume:", error);
-        }
-      }
-    };
-
     loadExistingResume();
-  }, [resumeId, token]);
+  }, []);
 
   return (
     <div>
@@ -221,16 +157,22 @@ const ResumeBuilder = () => {
 
       <div className="max-w-7xl mx-auto px-4 pb-8">
         <div className="grid lg:grid-cols-12 gap-8">
+          {/* Left Panel - Form */}
           <div className="relative lg:col-span-5 rounded-lg overflow-hidden">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 pt-1">
+              {/* Progress bar using activeSectionIndex */}
+
               <hr className="absolute top-0 left-0 right-0 border-2 border-gray-200" />
               <hr
                 className="absolute top-0 left-0 h-1 bg-linear-to-br from-green-500 to-green-600 border-none transition-all duration-2000"
                 style={{
-                  width: `${(activeSectionIndex * 100) / (sections.length - 1)}%`,
+                  width: `${
+                    (activeSectionIndex * 100) / (sections.length - 1)
+                  }%`,
                 }}
               />
 
+              {/* Section Navigation */}
               <div className="flex justify-between items-center mb-6 border-b border-gray-300 py-1">
                 <div className="flex items-center gap-2">
                   <TemplateSelector
@@ -281,6 +223,7 @@ const ResumeBuilder = () => {
                 </div>
               </div>
 
+              {/* Form Content */}
               <div className="space-y-6">
                 {activeSection.id === "personal" && (
                   <PersonalInfoForm
@@ -375,6 +318,7 @@ const ResumeBuilder = () => {
             </div>
           </div>
 
+          {/* Right Panel - Preview */}
           <div className="lg:col-span-7 max-lg:mt-6">
             <div className="relative w-full">
               <div className="absolute bottom-3 left-0 right-0 flex items-center justify-end gap-2">
