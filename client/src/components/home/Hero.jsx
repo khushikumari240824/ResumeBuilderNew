@@ -8,11 +8,11 @@ const Hero = () => {
   const { user } = useSelector((state) => state.auth);
 
   const logos = [
-    "https://saasly.prebuiltui.com/assets/companies-logo/instagram.svg",
-    "https://saasly.prebuiltui.com/assets/companies-logo/framer.svg",
-    "https://saasly.prebuiltui.com/assets/companies-logo/microsoft.svg",
-    "https://saasly.prebuiltui.com/assets/companies-logo/huawei.svg",
-    "https://saasly.prebuiltui.com/assets/companies-logo/walmart.svg",
+    "/assets/companies-logo/instagram.svg",
+    "/assets/companies-logo/framer.svg",
+    "/assets/companies-logo/microsoft.svg",
+    "/assets/companies-logo/huawei.svg",
+    "/assets/companies-logo/walmart.svg",
   ];
 
   return (
@@ -169,7 +169,7 @@ const Hero = () => {
           </div>
 
           {/* Headline + CTA */}
-          <h1 className="text-5xl md:text-6xl font-semibold max-w-5xl text-center mt-4 md:leading-[70px]">
+          <h1 className="text-5xl md:text-6xl font-semibold max-w-5xl text-center mt-4 md:leading-17.5">
             Land your dream job with{" "}
             <span className=" bg-linear-to-r from-green-700 to-green-600 bg-clip-text text-transparent text-nowrap">
               AI-powered{" "}
